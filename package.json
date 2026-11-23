@@ -1,0 +1,24 @@
+{
+  "name": "guard-bot",
+  "version": "1.0.0",
+  "description": "Görev paylaşan Discord koruma, moderasyon ve yapı yedekleme botu",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "start:1": "bun src/Base/app.js guard1",
+    "start:2": "bun src/Base/app.js guard2",
+    "start:3": "bun src/Base/app.js guard3",
+    "start:4": "bun src/Base/app.js snapshot",
+    "start:all": "bun src/Base/app.js all"
+  },
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "dotenv": "^16.5.0",
+    "mongoose": "^8.24.5",
+    "winston": "^3.17.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

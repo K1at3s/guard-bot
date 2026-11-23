@@ -1,0 +1,15 @@
+import { UserInputError } from "../../Utils/errors.js";
+import { PermissionsBitField } from "discord.js";
+import { snowflake, reasonText, auditReason, recordCase, report } from "../../Utils/command.js";
+export const commandBase = {
+  name: "unban", aliases: ["unbanla"], description: "Mevcut ban kaydını doğrular ve gerekçeli olarak kaldırır.", perms: PermissionsBitField.Flags.BanMembers, cooldown: 3,
+  async run(client, message, args) {
+    const targetId = snowflake(args[0]);
+    if (!targetId) throw new UserInputError("Geçerli bir kullanıcı ID'si girin.");
+    const ban = await message.guild.bans.fetch(targetId);
+    const reason = reasonText(args.slice(1));
+    await message.guild.members.unban(targetId, auditReason(message, reason));
+    const id = await recordCase(message, "unban", targetId, reason, { previousReason: ban.reason });
+    return report(message, "Ban kaldırıldı", [["Kullanıcı", ban.user.tag], ["Önceki ban sebebi", ban.reason || "Belirtilmemiş"], ["Sebep", reason], ["Kayıt", id]]);
+  },
+};

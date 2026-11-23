@@ -1,0 +1,323 @@
+{
+  "date": "2026-10-16",
+  "sourceCount": 68,
+  "dependencies": {
+    "discord.js": "14.27.0",
+    "mongoose": "8.24.5",
+    "dotenv": "16.6.1",
+    "winston": "3.19.0",
+    "undici": "6.29.0",
+    "ws": "8.22.0"
+  },
+  "sourceFiles": [
+    {
+      "path": "src/Base/app.js",
+      "sha256": "50a0928c15a4fe27887a42d35bdd0cad5bfc0548c85796409793583536d3c185"
+    },
+    {
+      "path": "src/Base/config.js",
+      "sha256": "916c7ac756f0854d052ed00e92153c3be202dbfb5ec1906dfc64774b7f5f418e"
+    },
+    {
+      "path": "src/Commands/guard/guard.js",
+      "sha256": "34bce089134f9ef67c27d82a13215ff013c5db45e237f4b1f1adca71c32b2f2a"
+    },
+    {
+      "path": "src/Commands/guard/karantina.js",
+      "sha256": "76a5ee6e876e7f8844ba50effe6b9fdc0ccff46a1724c786174980d5973ca990"
+    },
+    {
+      "path": "src/Commands/guard/safelist.js",
+      "sha256": "9c7a9714963684e278194145ddda37848f9d8bff6a74913e50106ad45083d5af"
+    },
+    {
+      "path": "src/Commands/guard/tag-rol.js",
+      "sha256": "182a301edd3e90b3d9a0daa227528fa2db5e83d106d6718fde7dc8380e9bb44a"
+    },
+    {
+      "path": "src/Commands/info/kontrol.js",
+      "sha256": "1ed01caf6f6100b094db1fffc960a51bda40620b02319053cb54b21a1bbc49fd"
+    },
+    {
+      "path": "src/Commands/info/ping.js",
+      "sha256": "135b13e2ff90807604c027b75343fd2d437ff998b919167b5b8d17f0b4f1527a"
+    },
+    {
+      "path": "src/Commands/info/say.js",
+      "sha256": "994f195423c7d5ae0edcaae3fb114895c631a5eb8b100a3c2ffada656b2a5421"
+    },
+    {
+      "path": "src/Commands/info/sicil.js",
+      "sha256": "2984f2e97ff8a8e89c56214eb0ba23078e254655083056d49d7ced58bed5959c"
+    },
+    {
+      "path": "src/Commands/info/yardim.js",
+      "sha256": "d2f014d21d6ba09201a59cbf370cfe5afbf1e6e41be1844fe7ce83c2ca0e3890"
+    },
+    {
+      "path": "src/Commands/mod/ban.js",
+      "sha256": "95e9406c3482c3b5e7e85b4d8c8637f75930bc50b07d69ca753d5fac4e593dbf"
+    },
+    {
+      "path": "src/Commands/mod/kick.js",
+      "sha256": "2cd4ddf413159721636a3bf25aaebb4b3082583a5bc3692b6929e504961edd3a"
+    },
+    {
+      "path": "src/Commands/mod/kurtar.js",
+      "sha256": "2e8fc6dfe302599b6b8696ac4ee6f3ec87a9f8432bae9752edd036738626ea28"
+    },
+    {
+      "path": "src/Commands/mod/lock.js",
+      "sha256": "35f2473169466995830ab26f0323fcbe98205b773e221b463f6ed5bcd92cec39"
+    },
+    {
+      "path": "src/Commands/mod/panik.js",
+      "sha256": "9642f182440cad6dd03f00030a76f098b7d6263548e48c82d108c7ee45a1e299"
+    },
+    {
+      "path": "src/Commands/mod/timeout.js",
+      "sha256": "a75a4b814db7575cf2fff94c58e0281b3bda221e40adee7bfc37d2a72a02bf0d"
+    },
+    {
+      "path": "src/Commands/mod/unban.js",
+      "sha256": "72ff3397687533aba3790f4bf2a94a58d6e637dd128bd2e2c986a0f298396a9c"
+    },
+    {
+      "path": "src/Commands/mod/uyar.js",
+      "sha256": "5dc0d77353349903d6be23aa4bea599d3db96ccbf68075a697d011ea3e062ac0"
+    },
+    {
+      "path": "src/Commands/owner/kapat.js",
+      "sha256": "cfae04fc831f2a9a1b297af3340f163b8bdb59fe7b21172a57041f23cd047ff5"
+    },
+    {
+      "path": "src/Commands/setup/komut-kanal.js",
+      "sha256": "64071a68bf8b6d817232e382cb240e8f7b4d37e0e12cc8fcf2868a777b54e3b8"
+    },
+    {
+      "path": "src/Commands/setup/settings.js",
+      "sha256": "c891dbabfc1d700a68c137fad4cc458553e1c8b14342fd372208ccbe73d77b43"
+    },
+    {
+      "path": "src/Commands/setup/setup.js",
+      "sha256": "1741b617dba6d5491a19f4254f00ed499fe0b06a0739d4f75da9e620ce23b066"
+    },
+    {
+      "path": "src/Commands/setup/snapshot.js",
+      "sha256": "63985a367b3ded2492f03c4e3c1009d83c915c2563e80841bb0f2f0ab5cf32bc"
+    },
+    {
+      "path": "src/Database/schemas/Case.js",
+      "sha256": "a01c0ca9107de12b1f8b1bdddc2ad1551613c1eaf1068f7404d41733ec69ff45"
+    },
+    {
+      "path": "src/Database/schemas/Guild.js",
+      "sha256": "30adb4438b5fe2fc47566a0c74037df77ad66a2a9f8000bcd8b02f63515e8872"
+    },
+    {
+      "path": "src/Database/schemas/OperationLease.js",
+      "sha256": "8ce992c69f3732a3b5a2d587974115740b428297e950dadcb2d32cc0c762b855"
+    },
+    {
+      "path": "src/Database/schemas/Quarantine.js",
+      "sha256": "c031475f563c5e8882ebf1603bd2329d7f4eb8e3b3746eb8667c205bdac27de4"
+    },
+    {
+      "path": "src/Database/schemas/Snapshot.js",
+      "sha256": "d77acf43e3d92c5ee0f0e7e1ed3b4643c316cb1c58393836229991eaf7426269"
+    },
+    {
+      "path": "src/Events/banGuard.js",
+      "sha256": "7f8684e7e0ccbef50f0ca43de64679cd6910058aa8d55e10eb0be86e30336f67"
+    },
+    {
+      "path": "src/Events/botGuard.js",
+      "sha256": "d8d854c99486dd49a981596a6202f46bad6c496003ff9f967c5660424515ee63"
+    },
+    {
+      "path": "src/Events/channelGuard.js",
+      "sha256": "760de6dee6933254a142be35257fd62dea4b4433574753217c333ae944556a26"
+    },
+    {
+      "path": "src/Events/channelPermissionGuard.js",
+      "sha256": "978dca21e768ad28b3d8f2ddb52e656fbeab01e842dbaea22413379a122bc1e8"
+    },
+    {
+      "path": "src/Events/connectionHealth.js",
+      "sha256": "7514d413788bdf146858af86caa9fd8d022c6df039c77fc62c281cc646348c29"
+    },
+    {
+      "path": "src/Events/emojiGuard.js",
+      "sha256": "86b7f32658df73addca318b3a2659ef7a628191347afb9cd24a5a3524a827b99"
+    },
+    {
+      "path": "src/Events/ghostPing.js",
+      "sha256": "9504f3488d56f6c809b011b93425ab2ef96ede6b288e430cb73239739f9d7ec4"
+    },
+    {
+      "path": "src/Events/interactionCreate.js",
+      "sha256": "157fffbabcd85c864cde757015c183903cf987ed506793338c1bbb91bd952ecf"
+    },
+    {
+      "path": "src/Events/kickGuard.js",
+      "sha256": "484f8461c579cc8b2e77792c6afdaf430f6b72131a5c28eddc4dfa93c608c98a"
+    },
+    {
+      "path": "src/Events/memberRoleGuard.js",
+      "sha256": "8432bcf00705a0d731dc742a1e4fe289e49e212b0de4ad714a3e1a453deb9a5d"
+    },
+    {
+      "path": "src/Events/messageCreate.js",
+      "sha256": "53a3d394987e9ffbe00f421de8951c9a904d7a961d4fdbe1375f2be2ad42c2e3"
+    },
+    {
+      "path": "src/Events/messageGuard.js",
+      "sha256": "b79ceb87cabbb73c6cc3b24ff0dba3ff9769986cfe826f4152e76206e7f060c6"
+    },
+    {
+      "path": "src/Events/quarantineGuard.js",
+      "sha256": "ad43b309cd9bada57706795f9455e416799f6f406c7159233689b5fb0fe684c5"
+    },
+    {
+      "path": "src/Events/raidGuard.js",
+      "sha256": "e9c75fb632ad5ed44c311cf1f16e4e1fb8b0988383aead20a1f677306d45c136"
+    },
+    {
+      "path": "src/Events/ready.js",
+      "sha256": "cc947974a9b686940042c63c4bd3f47f5fdeadf3d885b0a0e8e230b257f1c390"
+    },
+    {
+      "path": "src/Events/roleGuard.js",
+      "sha256": "3b31c142edc7095cb6bb6b10d6b7d8aa3005d3e7e4df8e7d57ddc732f6ef893a"
+    },
+    {
+      "path": "src/Events/serverGuard.js",
+      "sha256": "2ee13a8956cb8e51bf30a7c7c6b404ba251165e965a1f6d635bbb71348fba6b5"
+    },
+    {
+      "path": "src/Events/snapshotSchedule.js",
+      "sha256": "c890dec1706380aea343ff2d03dd89da12c3c9f4193d407ac872e3333e676ec2"
+    },
+    {
+      "path": "src/Events/stickerGuard.js",
+      "sha256": "2de8b62bd8f3361336c199389cfc8fe79a89c53025ce75ffabc6820f9e8261c4"
+    },
+    {
+      "path": "src/Events/tagRole.js",
+      "sha256": "a8b403fc9c97f6d21d6716d6f6285fe7c99b002a24bb09fe7d52a4ad23371208"
+    },
+    {
+      "path": "src/Events/timeoutGuard.js",
+      "sha256": "4a8fbf37ab4c087debf0049929542ed8b8e680c1f9d96be50add859020ac7856"
+    },
+    {
+      "path": "src/Events/unbanGuard.js",
+      "sha256": "57b3913dfb867dd275e92535d9fa2d9758ae9073d10692350986f9cc39e328fa"
+    },
+    {
+      "path": "src/Events/webhookGuard.js",
+      "sha256": "520dd513f1d31df475e543bb7d52e0e42d33ce1d8819df1d99011375c53fd8e5"
+    },
+    {
+      "path": "src/Handlers/command.js",
+      "sha256": "94f88dbbd7f6ad5bc5fe54a159d2ffb72237b5651ca818b8fa7fa6d4d0f4d486"
+    },
+    {
+      "path": "src/Handlers/event.js",
+      "sha256": "5e824c2ea74d4f9c9f7d044b1dbfd7c3ea74a6caa71d5f09ec4d29ad303f9a96"
+    },
+    {
+      "path": "src/Handlers/logger.js",
+      "sha256": "5504b8688479c0695b12986d1016f1f1b4cb6a9167e92c31951a1f093a5d8a4a"
+    },
+    {
+      "path": "src/Utils/audit.js",
+      "sha256": "39e261309007cc150b6e882f9de51f8d968612d7d453bcc65a34cf7947c30504"
+    },
+    {
+      "path": "src/Utils/authorization.js",
+      "sha256": "97a3bbe2ab18efb5a461b04392b7c76fdf75cc3fd3dfc0c43527243446e7eb39"
+    },
+    {
+      "path": "src/Utils/command.js",
+      "sha256": "b3daca3d5180beac38f119201bf1e44f6db069387f87214a9f269d6cc183b348"
+    },
+    {
+      "path": "src/Utils/commandCatalog.js",
+      "sha256": "0b66debefe49c0a979bb6631545ea8c00ebc33950cd1582cc089c57f5a53ef85"
+    },
+    {
+      "path": "src/Utils/errors.js",
+      "sha256": "4cf871896cb68a48281af0c780c299b91eff762317408d6532587ca1a3f610d1"
+    },
+    {
+      "path": "src/Utils/guard.js",
+      "sha256": "0569c790a01b36971322eb8995ba70d133492566bd946199994a7e3d18aa0e5a"
+    },
+    {
+      "path": "src/Utils/lease.js",
+      "sha256": "acdc6216998559425ba224c20291bb8662ce5a72fe328b23dda4eeb975f40d2b"
+    },
+    {
+      "path": "src/Utils/policy.js",
+      "sha256": "dfaa4f80f1342a8548defac79da31ec4feebbe32f444ecaaacc1ad707e62894f"
+    },
+    {
+      "path": "src/Utils/rateLimit.js",
+      "sha256": "087223b79140e709b3578caf5d7adcc0ee907173176bec8d5b7f4ad2ee084bd5"
+    },
+    {
+      "path": "src/Utils/safelist.js",
+      "sha256": "fada4ae5592ea82446cd47e37733b218dacb8fc504d4187816a158ac69cb678e"
+    },
+    {
+      "path": "src/Utils/secrets.js",
+      "sha256": "ceda1bf259f070c29dbfbd274def02cbdeabab3198e84ea32eb9a49bd50e3bc9"
+    },
+    {
+      "path": "src/Utils/security.js",
+      "sha256": "6232b56756ee5f869c4ae88c4cd75f7b681f424733338e4d44ad42c448cdf089"
+    },
+    {
+      "path": "src/Utils/snapshot.js",
+      "sha256": "357741cac1a9fdf57c5ad6a48fbba15261f9bc5ed63bac0d2e3542ca62b75e43"
+    }
+  ],
+  "literalTokenFindings": [],
+  "configuration": {
+    "configuredTokens": 4,
+    "distinctTokens": 4,
+    "ownerCount": 1,
+    "validOwnerIds": true,
+    "mongoConfigured": true,
+    "insecureMongoTlsOptions": false
+  },
+  "commandCount": 22,
+  "eventModuleCount": 23,
+  "manifests": [
+    {
+      "path": "package.json",
+      "sha256": "c4e5dfa155c4eb57ab7f318564011faf4107e073d9be7208129f97dc1f0c70ef"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "43c6e17050fc0e3ece60cf77e2532cbfbcc83060c39e517fc8d132bd44d55321"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "6fd58a51c00e2b9eb0500f316a36b8134057ec87a45d80a9b1a3de2e7ecd8cb2"
+    },
+    {
+      "path": "başlat.bat",
+      "sha256": "40e98248a5b6394a266b04a2f7e2e634b741d42864ae68519902188ced967304"
+    }
+  ],
+  "tests": {
+    "total": 62,
+    "passed": 62,
+    "failed": 0,
+    "report": "docs/test-results.tap",
+    "liveDiscord": false,
+    "liveMongoDB": false
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "date": "2026-10-16",
+  "tool": "bun audit --json",
+  "exitCode": 0,
+  "result": {},
+  "note": "npm guvenlik veritabanina yapilan basarili sorgu bilinen acik bildirmedi; guvenlik garantisi degildir."
+}
