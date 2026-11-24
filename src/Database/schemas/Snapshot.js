@@ -17,7 +17,7 @@ const SnapshotSchema = new mongoose.Schema({
     position: Number, topic: String, nsfw: Boolean,
     rateLimit: Number, userLimit: Number, bitrate: Number, rtcRegion: String,
     defaultAutoArchiveDuration: Number,
-    overwrites: [{ id: String, type: Number, allow: [String], deny: [String] }],
+    overwrites: [{ id: String, type: { type: Number }, allow: [String], deny: [String] }],
   }],
 });
 
