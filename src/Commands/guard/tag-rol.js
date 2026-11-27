@@ -9,22 +9,23 @@ const running = new Set();
 export const commandBase = {
   name: "tag-rol", aliases: ["tagrol","tag-role","tagrole"], description: "Güvenli tag rolü ayarlar ve mevcut üyelerin rollerini eşitler.", perms: PermissionsBitField.Flags.ManageGuild, cooldown: 5,
   async run(client, message, args) {
+    const isTurkish = message.isTurkish ?? message.interaction?.locale?.startsWith("tr") ?? (message.guild?.preferredLocale?.startsWith("tr") ?? true);
     const data = await settings(message.guild.id);
     const sub = args[0] ?? "durum";
-    if (["durum","status","info"].includes(sub)) return report(message, "Tag rolü", [["Durum", data.guards.tag.enabled ? "Açık" : "Kapalı"], ["Rol", data.tagRole || "Ayarlanmamış"]]);
+    if (["durum","status","info"].includes(sub)) return report(message, isTurkish ? "Tag rolü" : "Tag role", [[isTurkish?"Durum":"Status", data.guards.tag.enabled ? (isTurkish?"Açık":"On") : (isTurkish?"Kapalı":"Off")], [isTurkish?"Rol":"Role", data.tagRole || (isTurkish?"Ayarlanmamış":"Not set")]]);
     if (["kapat","close","disable","off"].includes(sub)) {
       await Guild.updateOne({ guildId: message.guild.id }, { $set: { "guards.tag.enabled": false } });
-      return message.reply("⏹️ Tag rol otomasyonu kapatıldı; mevcut roller korundu.");
+      return message.reply(isTurkish ? "⏹️ Tag rol otomasyonu kapatıldı; mevcut roller korundu." : "⏹️ Tag role automation disabled; existing roles were kept.");
     }
     const id = sub === "eşitle" ? data.tagRole : snowflake(args[1] ?? args[0]);
     const role = message.guild.roles.cache.get(id);
     assertAutomationRole(message.guild, role, data.quarantineRole);
     if (sub !== "eşitle") {
       await Guild.updateOne({ guildId: message.guild.id }, { $set: { tagRole: role.id, "guards.tag.enabled": true } }, { upsert: true });
-      await recordCase(message, "tag-role", role.id, "Tag rolü ayarlandı");
-      return message.reply("✅ Tag rolü ayarlandı: " + role.name + ". Mevcut üyeler için tag-rol eşitle kullanın.");
+      await recordCase(message, "tag-role", role.id, isTurkish ? "Tag rolü ayarlandı" : "Tag role configured");
+      return message.reply(isTurkish ? "✅ Tag rolü ayarlandı: " + role.name + ". Mevcut üyeler için tag-rol eşitle kullanın." : "✅ Tag role set: " + role.name + ". Use tag-role sync for existing members.");
     }
-    if (running.has(message.guild.id)) throw new UserInputError("Tag eşitleme zaten sürüyor.");
+    if (running.has(message.guild.id)) throw new UserInputError(isTurkish ? "Tag eşitleme zaten sürüyor." : "Tag sync is already running.");
     running.add(message.guild.id);
     try {
       const members = await message.guild.members.fetch();
@@ -38,7 +39,7 @@ export const commandBase = {
         try { if (tagged) { await member.roles.add(role, "Tag eşitleme"); added++; } else { await member.roles.remove(role, "Tag eşitleme"); removed++; } }
         catch (err) { failed++; client.logger.error("[Tag eşitleme] " + member.id + ": " + err.message); }
       }
-      return report(message, "Tag eşitleme tamamlandı", [["Rol verilen", added], ["Rol alınan", removed], ["Başarısız", failed]]);
+      return report(message, isTurkish ? "Tag eşitleme tamamlandı" : "Tag sync completed", [[isTurkish?"Rol verilen":"Roles added", added], [isTurkish?"Rol alınan":"Roles removed", removed], [isTurkish?"Başarısız":"Failed", failed]]);
     } finally { running.delete(message.guild.id); }
   },
 };

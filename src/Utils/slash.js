@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, REST, Routes, PermissionsBitField } from "discord.js";
 import config, { COMMAND_ROLE } from "../Base/config.js";
+import { resolveLocale } from "./i18n.js";
 
 const GUARD_SYSTEMS = [["ban","Ban"],["kick","Kick"],["bot","Bot"],["raid","Raid"],["channel","Kanal"],["role","Rol"],["emoji","Emoji"],["sticker","Sticker"],["webhook","Webhook"],["server","Sunucu"],["message","Mesaj"],["tag","Tag"],["timeout","Timeout"]];
 const PUNISH = [["quarantine","Karantina"],["kick","Kick"],["ban","Ban"]];
@@ -248,6 +249,7 @@ export function wrapInteraction(interaction) {
   };
   const channel = Object.create(interaction.channel ?? {});
   channel.send = (payload) => reply(payload);
+  const locale = resolveLocale(interaction.locale ?? interaction.guildLocale ?? interaction.guild?.preferredLocale);
   return {
     client: interaction.client,
     guild: interaction.guild,
@@ -256,6 +258,8 @@ export function wrapInteraction(interaction) {
     author: interaction.user,
     user: interaction.user,
     content: "",
+    locale,
+    isTurkish: locale === "tr",
     interaction,
     reply,
     editReply: (p) => interaction.deferred || interaction.replied ? interaction.editReply(normalize(p)) : interaction.reply(normalize(p)),

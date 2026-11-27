@@ -20,13 +20,14 @@ export const commandBase = {
   perms: PermissionsBitField.Flags.Administrator,
   cooldown: 10,
   async run(client, message, args) {
+    const isTurkish = message.isTurkish ?? message.interaction?.locale?.startsWith("tr") ?? (message.guild?.preferredLocale?.startsWith("tr") ?? true);
     const { guild } = message;
     const log = client.logger;
     try {
       const mode = args[0] ?? "kur";
-      if (!["kur","install","onar","repair","kontrol","check"].includes(mode)) throw new UserInputError("Kullanım: setup kur/install|onar/repair|kontrol/check");
+      if (!["kur","install","onar","repair","kontrol","check"].includes(mode)) throw new UserInputError(isTurkish ? "Kullanım: setup kur/install|onar/repair|kontrol/check" : "Usage: setup install/repair/check");
       const data = await settings(guild.id);
-      if (mode === "kontrol" || mode === "check") return report(message, "Kurulum kontrolü", [["Kategori", guild.channels.cache.has(data.logCategoryId) ? "Var" : "Eksik"], ["Log kanalları", LOGS.map(([, key]) => key + ": " + (guild.channels.cache.get(data.logs?.[key])?.isTextBased() ? "Var" : "Eksik")).join("\n")], ["Onarma", "setup onar — korumaların durumunu değiştirmeden logları onarır"]]);
+      if (mode === "kontrol" || mode === "check") return report(message, isTurkish ? "Kurulum kontrolü" : "Setup check", [[isTurkish?"Kategori":"Category", guild.channels.cache.has(data.logCategoryId) ? (isTurkish?"Var":"OK") : (isTurkish?"Eksik":"Missing")], [isTurkish?"Log kanalları":"Log channels", LOGS.map(([, key]) => key + ": " + (guild.channels.cache.get(data.logs?.[key])?.isTextBased() ? (isTurkish?"Var":"OK") : (isTurkish?"Eksik":"Missing"))).join("\n")], [isTurkish?"Onarma":"Repair", isTurkish ? "setup onar — korumaların durumunu değiştirmeden logları onarır" : "setup repair — repairs logs without changing guard states"]]);
 
       const me = await guild.members.fetchMe();
       const botIds = [...new Set([me.id, ...activeGuardBotIds(data)])];
@@ -62,10 +63,10 @@ export const commandBase = {
       await Guild.updateOne({ guildId: guild.id }, { $set: set }, { upsert: true });
       log.info(`[Setup] ${guild.name}: kurulum tamamlandı (${message.author.tag}).`);
       return message.channel.send({ embeds: [new EmbedBuilder().setColor(Colors.Green)
-        .setTitle("✅ Kurulum Tamamlandı").setDescription(lines.join("\n")).setTimestamp()] });
+        .setTitle(isTurkish ? "✅ Kurulum Tamamlandı" : "✅ Setup Complete").setDescription(lines.join("\n")).setTimestamp()] });
     } catch (err) {
       log.error(`[Setup] ${err.message}`);
-      return message.channel.send("❌ Kurulum hatası. Botun **Kanal Yönetimi** yetkisini, rol sırasını ve sunucu izinlerini kontrol edin.");
+      return message.channel.send(isTurkish ? "❌ Kurulum hatası. Botun **Kanal Yönetimi** yetkisini, rol sırasını ve sunucu izinlerini kontrol edin." : "❌ Setup error. Check the bot's Manage Channels permission, role hierarchy, and server permissions.");
     }
   },
 };

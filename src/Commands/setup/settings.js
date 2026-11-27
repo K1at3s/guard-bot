@@ -29,27 +29,28 @@ export const commandBase = {
   perms: PermissionsBitField.Flags.ManageGuild,
   cooldown: 5,
   async run(client, message, args) {
+    const isTurkish = message.isTurkish ?? message.interaction?.locale?.startsWith("tr") ?? (message.guild?.preferredLocale?.startsWith("tr") ?? true);
     const data = await settings(message.guild.id);
     if (args[0]) {
       const [sub, key, raw] = args;
       const set = {};
       if (sub === "log") {
-        if (!Object.hasOwn(GUARDS, key) && key !== "mod") throw new UserInputError("Geçerli bir koruma sistemi girin.");
+        if (!Object.hasOwn(GUARDS, key) && key !== "mod") throw new UserInputError(isTurkish ? "Geçerli bir koruma sistemi girin." : "Enter a valid guard system.");
         const channel = message.guild.channels.cache.get(snowflake(raw));
-        if (!channel?.isTextBased() || channel.isThread?.()) throw new UserInputError("Geçerli log kanalı seçin.");
-        if (channel.permissionsFor(message.guild.roles.everyone)?.has(PermissionsBitField.Flags.ViewChannel)) throw new UserInputError("Log kanalı herkese açık olamaz. Önce @everyone için Kanalı Görüntüle iznini kapatın.");
+        if (!channel?.isTextBased() || channel.isThread?.()) throw new UserInputError(isTurkish ? "Geçerli log kanalı seçin." : "Select a valid log channel.");
+        if (channel.permissionsFor(message.guild.roles.everyone)?.has(PermissionsBitField.Flags.ViewChannel)) throw new UserInputError(isTurkish ? "Log kanalı herkese açık olamaz. Önce @everyone için Kanalı Görüntüle iznini kapatın." : "Log channel cannot be public. Disable View Channel for @everyone first.");
         set[`logs.${key}`] = channel.id;
       } else if (sub === "mesaj" || sub === "message" || sub === "raid") {
         if ((sub === "mesaj" || sub === "message") && ["hariç-ekle","haric-ekle","exclude-add","hariç-kaldır","haric-kaldir","exclude-remove"].includes(key)) {
           const id = snowflake(raw);
-          if (!message.guild.channels.cache.get(id)?.isTextBased()) throw new UserInputError("Geçerli kanal seçin.");
+          if (!message.guild.channels.cache.get(id)?.isTextBased()) throw new UserInputError(isTurkish ? "Geçerli kanal seçin." : "Select a valid channel.");
           await Guild.updateOne({ guildId: message.guild.id }, { [["hariç-ekle","haric-ekle","exclude-add"].includes(key) ? "$addToSet" : "$pull"]: { "messagePolicy.ignoredChannels": id } }, { upsert: true });
-          return message.reply("✅ Mesaj korumasının kanal istisnası güncellendi. Token sızıntısı kontrolü devam eder.");
+          return message.reply(isTurkish ? "✅ Mesaj korumasının kanal istisnası güncellendi. Token sızıntısı kontrolü devam eder." : "✅ Message protection channel exception updated. Token leak scanning still applies.");
         }
         set[`${(sub === "mesaj" || sub === "message") ? "messagePolicy" : "raidPolicy"}.${key}`] = policyValue((sub === "mesaj" || sub === "message") ? MESSAGE_OPTIONS : RAID_OPTIONS, key, raw);
       } else if (sub === "uyarı" || sub === "uyari" || sub === "warning") {
         const threshold = Number(key), ms = duration(raw);
-        if (!Number.isInteger(threshold) || threshold < 1 || threshold > 20 || !ms) throw new UserInputError("Kullanım: ayarlar uyarı <1..20> <1m|1h|1d>");
+        if (!Number.isInteger(threshold) || threshold < 1 || threshold > 20 || !ms) throw new UserInputError(isTurkish ? "Kullanım: ayarlar uyarı <1..20> <1m|1h|1d>" : "Usage: settings warning <1..20> <1m|1h|1d>");
         set["warningPolicy.threshold"] = threshold;
         set["warningPolicy.timeoutMs"] = ms;
       } else if (sub === "politikalar" || sub === "policies") {
@@ -57,32 +58,32 @@ export const commandBase = {
         const r = data.raidPolicy?.toObject?.() ?? data.raidPolicy ?? {};
         const w = data.warningPolicy?.toObject?.() ?? data.warningPolicy ?? {};
         const ignored = (m.ignoredChannels ?? []).map((id) => `<#${id}>`).join(", ") || "`Yok`";
-        return report(message, "Koruma politikaları", [
-          ["Mesaj", [
-            `Davet linkleri: ${m.invites ? "🟢 Açık" : "🔴 Kapalı"}`,
-            `Scam linkleri: ${m.scam ? "🟢 Açık" : "🔴 Kapalı"}`,
-            `Mention limiti: \`${m.mentions ?? "—"}\``,
-            `Flood: \`${m.flood ?? "—"}\` mesaj / \`${fmtMs(m.floodWindowMs ?? 0)}\``,
-            `Tekrar: \`${m.duplicates ?? "—"}\``,
-            `Emoji limiti: \`${m.emojis ?? "—"}\``,
-            `Büyük harf: \`%${m.capsPercent ?? "—"}\` (min ${m.capsMinLength ?? "—"} karakter)`,
-            `Mesaj timeout: \`${fmtMs(m.timeoutMs ?? 0)}\``,
-            `İstisna kanallar: ${ignored}`,
+        return report(message, isTurkish ? "Koruma politikaları" : "Protection policies", [
+          [isTurkish ? "Mesaj" : "Message", [
+            `${isTurkish ? "Davet linkleri" : "Invite links"}: ${m.invites ? (isTurkish?"🟢 Açık":"🟢 On") : (isTurkish?"🔴 Kapalı":"🔴 Off")}`,
+            `${isTurkish ? "Scam linkleri" : "Scam links"}: ${m.scam ? (isTurkish?"🟢 Açık":"🟢 On") : (isTurkish?"🔴 Kapalı":"🔴 Off")}`,
+            `${isTurkish ? "Mention limiti" : "Mention limit"}: \`${m.mentions ?? "—"}\``,
+            `${isTurkish ? "Flood" : "Flood"}: \`${m.flood ?? "—"}\` ${isTurkish?"mesaj":"messages"} / \`${fmtMs(m.floodWindowMs ?? 0)}\``,
+            `${isTurkish ? "Tekrar" : "Duplicates"}: \`${m.duplicates ?? "—"}\``,
+            `${isTurkish ? "Emoji limiti" : "Emoji limit"}: \`${m.emojis ?? "—"}\``,
+            `${isTurkish ? "Büyük harf" : "Caps"}: \`%${m.capsPercent ?? "—"}\` (${isTurkish?"min":"min"} ${m.capsMinLength ?? "—"} ${isTurkish?"karakter":"chars"})`,
+            `${isTurkish ? "Mesaj timeout" : "Message timeout"}: \`${fmtMs(m.timeoutMs ?? 0)}\``,
+            `${isTurkish ? "İstisna kanallar" : "Ignored channels"}: ${ignored}`,
           ].join("\n")],
-          ["Raid", [
-            `Katılım penceresi: \`${fmtMs(r.windowMs ?? 0)}\``,
-            `Raid süresi: \`${fmtMs(r.durationMs ?? 0)}\``,
-            `Min. hesap yaşı: \`${r.minAccountAgeHours ?? 0}\` saat${(r.minAccountAgeHours ?? 0) === 0 ? " (Kapalı)" : ""}`,
+          [isTurkish ? "Raid" : "Raid", [
+            `${isTurkish ? "Katılım penceresi" : "Join window"}: \`${fmtMs(r.windowMs ?? 0)}\``,
+            `${isTurkish ? "Raid süresi" : "Raid duration"}: \`${fmtMs(r.durationMs ?? 0)}\``,
+            `${isTurkish ? "Min. hesap yaşı" : "Min account age"}: \`${r.minAccountAgeHours ?? 0}\` ${isTurkish?"saat":"hours"}${(r.minAccountAgeHours ?? 0) === 0 ? (isTurkish?" (Kapalı)":" (Off)") : ""}`,
           ].join("\n")],
-          ["Uyarı", [
-            `Eşik: \`${w.threshold ?? "—"}\` uyarı`,
-            `Timeout süresi: \`${fmtMs(w.timeoutMs ?? 0)}\``,
+          [isTurkish ? "Uyarı" : "Warning", [
+            `${isTurkish ? "Eşik" : "Threshold"}: \`${w.threshold ?? "—"}\` ${isTurkish?"uyarı":"warnings"}`,
+            `${isTurkish ? "Timeout süresi" : "Timeout duration"}: \`${fmtMs(w.timeoutMs ?? 0)}\``,
           ].join("\n")],
         ]);
-      } else throw new UserInputError("Kullanım: ayarlar [log|mesaj/message|raid|uyarı/warning|politikalar/policies]. Ayrıntı: yardım settings");
+      } else throw new UserInputError(isTurkish ? "Kullanım: ayarlar [log|mesaj|raid|uyarı|politikalar]. Ayrıntı: yardım settings" : "Usage: settings [log|message|raid|warning|policies]. Details: help settings");
       await Guild.updateOne({ guildId: message.guild.id }, { $set: set }, { upsert: true, runValidators: true });
       await recordCase(message, "settings", message.guild.id, args.join(" "));
-      return message.reply("✅ Ayarlar güncellendi: " + Object.entries(set).map(([k, v]) => `${k} = ${v}`).join(", "));
+      return message.reply((isTurkish ? "✅ Ayarlar güncellendi: " : "✅ Settings updated: ") + Object.entries(set).map(([k, v]) => `${k} = ${v}`).join(", "));
     }
     const g = (k) => data?.guards?.[k];
     const fields = Object.entries(GUARDS).map(([key, def]) => ({

@@ -26,8 +26,9 @@ export default {
         await integration.delete("Guard: izinsiz entegrasyon");
       });
     }
+    const targetName = entry.target?.name ?? entry.target?.tag ?? entry.targetId ?? entry.target?.id ?? "—";
     await sendLog(guild, "webhook", new EmbedBuilder().setColor(Colors.Red).setTitle("Webhook / Entegrasyon Koruma")
-      .addFields({ name: "Yetkili", value: entry.executor.tag }, { name: "Hedef", value: String(entry.targetId ?? entry.target?.id ?? "—") },
+      .addFields({ name: "Yetkili", value: `${entry.executor.tag} (\`${entry.executor.id}\`)` }, { name: "Hedef", value: String(targetName) },
         { name: "İşlem", value: String(entry.action), inline: true }, { name: "Ceza", value: punishment, inline: true }, { name: "Müdahale", value: recovery }).setTimestamp());
   },
 };

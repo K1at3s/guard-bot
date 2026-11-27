@@ -12,6 +12,7 @@ export const commandBase = {
   perms: PermissionsBitField.Flags.Administrator,
   cooldown: 10,
   async run(client, message, args) {
+    const isTurkish = message.isTurkish ?? message.interaction?.locale?.startsWith("tr") ?? (message.guild?.preferredLocale?.startsWith("tr") ?? true);
     const [sub, no] = args;
     const log = client.logger;
 
@@ -28,13 +29,13 @@ export const commandBase = {
       if (!Number.isInteger(index) || index < 1 || index > MAX_SNAP) throw new UserInputError("Yedek sırası 1–3 arasında olmalı.");
       const snaps = await Snapshot.find({ guildId: message.guild.id }).sort({ createdAt: -1 });
       const snap = snaps[index - 1];
-      if (!snap) throw new UserInputError("Yedek bulunamadı.");
+      if (!snap) throw new UserInputError(isTurkish ? "Yedek bulunamadı." : "Snapshot not found.");
       if (sub === "incele" || args[2] !== "ONAY") {
         await Promise.all([message.guild.roles.fetch(), message.guild.channels.fetch()]);
         const plan = snapshotPlan(message.guild, snap);
-        return report(message, "Yedek geri yükleme önizlemesi", [["Oluşturulacak", `${plan.roles.length} rol • ${plan.channels.length} kanal`], ["Mevcut", `${snap.roles.length - plan.roles.length} rol • ${snap.channels.length - plan.channels.length} kanal`], ["Uygulama", `snapshot yükle ${index} ONAY — yalnız eksik yapılar oluşturulur; üye yetkileri otomatik geri verilmez.`]]);
+        return report(message, "Yedek geri yükleme önizlemesi", [["Oluşturulacak", `${plan.roles.length} rol • ${plan.channels.length} ${isTurkish?"kanal":"channels"}`], ["Mevcut", `${snap.roles.length - plan.roles.length} rol • ${snap.channels.length - plan.channels.length} ${isTurkish?"kanal":"channels"}`], ["Uygulama", `snapshot yükle ${index} ONAY — yalnız eksik yapılar oluşturulur; üye yetkileri otomatik geri verilmez.`]]);
       }
-      if (!config.owners.includes(message.author.id)) return message.channel.send("❌ Yükleme sadece bot sahiplerine açık.");
+      if (!config.owners.includes(message.author.id)) return message.channel.send(isTurkish ? "❌ Yükleme sadece bot sahiplerine açık." : "❌ Restore is only available to bot owners.");
       const status = await message.channel.send(`⏳ Geri yükleme başladı (${snap.roles.length} rol, ${snap.channels.length} kanal)...`);
       try {
         const res = await restoreGuild(message.guild, snap, log);
@@ -46,7 +47,7 @@ export const commandBase = {
       }
     }
 
-    if (sub !== "al") return message.channel.send("❌ Kullanım: `.snapshot al | liste | yükle <sıra>`");
+    if (sub !== "al") return message.channel.send(isTurkish ? "❌ Kullanım: `.snapshot al | liste | yükle <sıra>`" : "❌ Usage: `.snapshot take | list | load <index>`");
     const res = await takeSnapshot(message.guild, message.author.tag, log);
     return message.channel.send(`📸 Yedek alındı: **${res.roles}** rol, **${res.channels}** kanal. (en fazla ${MAX_SNAP} yedek tutulur)`);
   },

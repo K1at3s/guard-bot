@@ -51,16 +51,16 @@ export const commandBase = {
       if (sub === "liste" || sub === "list") {
         const page = paginate(data.safelist, raw, 15);
         const items = page.items.map((uid) => `<@${uid}> (\`${uid}\`)`);
-        return report(message, `Güvenli liste • ${page.page}/${page.pages}`, [["Toplam", page.total], ["Üyeler", items.join("\n") || "Liste boş"]]);
+        return report(message, `${isTurkish ? "Güvenli liste" : "Safelist"} • ${page.page}/${page.pages}`, [[isTurkish?"Toplam":"Total", page.total], [isTurkish?"Üyeler":"Members", items.join("\n") || (isTurkish?"Liste boş":"List is empty")]]);
       }
       const id = snowflake(raw);
-      if (!id) throw new UserInputError("Geçerli kullanıcı etiketi veya ID girin.");
-      if (sub === "kontrol" || sub === "check") return report(message, "Muafiyet kontrolü", [["Kullanıcı", id], ["Guard muafiyeti", isExempt(message.guild, id, data) ? "Var" : "Yok"], ["Safelist kaydı", data.safelist.includes(id) ? "Var" : "Yok"]]);
-      if (!["ekle","add","kaldır","kaldir","remove"].includes(sub)) throw new UserInputError("Kullanım: safelist ekle|kaldır|kontrol <ID> veya safelist liste [sayfa]");
-      if ((sub === "ekle" || sub === "add") && data.safelist.length >= 200 && !data.safelist.includes(id)) throw new UserInputError("Güvenli liste en fazla 200 kullanıcı içerebilir.");
+      if (!id) throw new UserInputError(isTurkish ? "Geçerli kullanıcı etiketi veya ID girin." : "Enter a valid user mention or ID.");
+      if (sub === "kontrol" || sub === "check") return report(message, isTurkish ? "Muafiyet kontrolü" : "Exemption check", [[isTurkish?"Kullanıcı":"User", id], [isTurkish?"Guard muafiyeti":"Guard exemption", isExempt(message.guild, id, data) ? (isTurkish?"Var":"Yes") : (isTurkish?"Yok":"No")], [isTurkish?"Safelist kaydı":"Safelist entry", data.safelist.includes(id) ? (isTurkish?"Var":"Yes") : (isTurkish?"Yok":"No")]]);
+      if (!["ekle","add","kaldır","kaldir","remove"].includes(sub)) throw new UserInputError(isTurkish ? "Kullanım: safelist ekle|kaldır|kontrol <ID> veya safelist liste [sayfa]" : "Usage: safelist add|remove|check <ID> or safelist list [page]");
+      if ((sub === "ekle" || sub === "add") && data.safelist.length >= 200 && !data.safelist.includes(id)) throw new UserInputError(isTurkish ? "Güvenli liste en fazla 200 kullanıcı içerebilir." : "Safelist can contain at most 200 users.");
       await updateSafelist(message.guild.id, [id], ["ekle","add"].includes(sub));
       await recordCase(message, "safelist", id, ["ekle","add"].includes(sub) ? "ekle" : "kaldır");
-      return message.reply(`✅ ${id}: güvenli liste ${sub} işlemi tamamlandı.`);
+      return message.reply(isTurkish ? `✅ ${id}: güvenli liste ${sub} işlemi tamamlandı.` : `✅ ${id}: safelist ${["ekle","add"].includes(sub) ? "add" : "remove"} completed.`);
     }
     const isTurkish = message.guild.preferredLocale?.startsWith("tr");
     if (!config.owners.includes(message.author.id)) {

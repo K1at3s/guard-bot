@@ -38,8 +38,10 @@ export default {
       const type = guild.roles.cache.has(targetId) ? 0 : 1;
       await channel.permissionOverwrites.edit(targetId, permissions, { type, reason: "Guard: kanal izinleri geri alındı" });
     });
+    const targetLabel = targetId ? (guild.roles.cache.get(targetId)?.name ?? guild.members.cache.get(targetId)?.user?.tag ?? `<@${targetId}>`) : "Bilinmiyor";
+    const channelLabel = guild.channels.cache.get(channelId)?.name ?? channelId ?? "Bilinmiyor";
     return sendLog(guild, "channel", new EmbedBuilder().setColor(Colors.Red).setTitle("Kanal İzin Koruması")
-      .addFields({ name: "Yetkili", value: entry.executor.tag }, { name: "Kanal / izin hedefi", value: `${channelId} / ${targetId ?? "Bilinmiyor"}` },
+      .addFields({ name: "Yetkili", value: `${entry.executor.tag} (\`${entry.executor.id}\`)` }, { name: "Kanal / izin hedefi", value: `${channelLabel} / ${targetLabel}` },
         { name: "Ceza", value: result }, { name: "Geri alma", value: restored }).setTimestamp());
   },
 };

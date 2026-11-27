@@ -6,6 +6,7 @@ export const commandBase = {
   name: "kontrol", aliases: ["diagnostic"], description: "Yetki, log, karantina ve veritabanı durumunu denetler.",
   perms: PermissionsBitField.Flags.ManageGuild, cooldown: 10,
   async run(client, message) {
+    const isTurkish = message.isTurkish ?? message.interaction?.locale?.startsWith("tr") ?? (message.guild?.preferredLocale?.startsWith("tr") ?? true);
     const data = await settings(message.guild.id);
     const me = await message.guild.members.fetchMe();
     const required = ["ViewAuditLog", "ManageRoles", "ManageChannels", "ManageWebhooks", "BanMembers", "KickMembers", "ModerateMembers"];
@@ -30,7 +31,7 @@ export const commandBase = {
         { name: "Karantina rolü", value: role?.editable && !role.managed && role.permissions.bitfield === 0n ? "Yönetilebilir ve yetkisiz; kanal izinlerini ayrıca inceleyin." : "Ayarlanmamış veya uygun değil" },
         { name: "Panik modu", value: data.raidUntil > new Date() ? `<t:${Math.floor(data.raidUntil.getTime() / 1000)}:R> sona erer` : "Kapalı" },
         { name: "Bot durum sinyalleri", value: serviceText.slice(0, 1024) },
-        { name: "Bu botun üstündeki yetki rolleri", value: highRoles.map((r) => r.name).join(", ").slice(0, 1024) || "Yok" },
+        { name: "Bu botun üstündeki yetki rolleri", value: highRoles.map((r) => r.name).join(", ").slice(0, 1024) || (isTurkish ? "Yok" : "None") },
         { name: "Muafiyetler", value: `${data.safelist.length} güvenli kullanıcı • ${data.guardBots.length} kayıtlı guard botu` },
       ).setFooter({ text: "Durum sinyali 60 saniyede yenilenir; anlık bağlantı garantisi değildir. Rol sırasını her bot için denetleyin." }).setTimestamp()] });
   },

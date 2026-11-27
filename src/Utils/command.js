@@ -49,9 +49,12 @@ export const auditReason = (message, reason) => `${reason} | ${message.author.id
 export async function recordCase(message, action, targetId, reason, details = {}) {
   reason = redactSecrets(reason);
   details = redactSecrets(details);
+  const targetName = message.guild?.members?.cache?.get(targetId)?.user?.tag
+    ?? message.client?.users?.cache?.get(targetId)?.tag
+    ?? null;
   const embed = new EmbedBuilder().setColor(Colors.Blurple).setTitle(`Moderasyon • ${action}`)
-    .addFields({ name: "Hedef", value: `\`${targetId}\``, inline: true },
-      { name: "Yetkili", value: `\`${message.author.id}\``, inline: true },
+    .addFields({ name: "Hedef", value: targetName ? `${targetName} (\`${targetId}\`)` : `<@${targetId}> (\`${targetId}\`)`, inline: true },
+      { name: "Yetkili", value: `${message.author.tag} (\`${message.author.id}\`)`, inline: true },
       { name: "Sebep", value: reason.slice(0, 1024) }).setTimestamp();
   let saved;
   try {

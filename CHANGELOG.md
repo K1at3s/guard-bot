@@ -5,6 +5,7 @@
 ### Added
 - **Slash komut desteği:** Tüm mevcut prefix komutları için slash komutları eklendi (`src/Utils/slash.js`).
 - **Discord lokalizasyonu:** Slash komutları, alt komutlar, seçenekler ve choice değerleri için `nameLocalizations` / `descriptionLocalizations` eklendi. Desteklenen tüm Discord locale’leri doldurulur; `tr` için Türkçe, diğer locale’ler için İngilizce fallback kullanılır.
+- **Mesaj i18n altyapısı:** `src/Utils/i18n.js` eklendi (`t()`, `resolveLocale()`, `localeFromContext()`). Prefix için `guild.preferredLocale`, slash için `interaction.locale/guildLocale` kullanılır; ortak hata mesajları ve `ban` komutu locale-aware hale getirildi.
 - **Bilingual prefix alt komutlar:** Guard/setup/mod/yönetim komutlarında Türkçe ve İngilizce alt komut eşanlamlıları kabul edilir (örn. `aç/open`, `kapat/close`, `liste/list`, `bilgi/info`, `ceza/punish`, `politikalar/policies`, `uyarı/warning`).
 - **Guard komutu sadeleştirme:** `guard` için daha kısa/anlaşılır kullanım, `durum` takma adı ve Türkçe sistem adları (örn. `rol`, `kanal`, `mesaj`) desteği eklendi.
 - **Başlatma betikleri:** `baslat.bat`, `baslat-guard1.bat`, `baslat-guard2.bat`, `baslat-guard3.bat`, `baslat-snapshot.bat`, `baslat-ayri.bat` eklendi.
