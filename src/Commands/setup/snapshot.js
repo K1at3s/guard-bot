@@ -15,7 +15,7 @@ export const commandBase = {
     const [sub, no] = args;
     const log = client.logger;
 
-    if (sub === "liste") {
+    if (sub === "liste" || sub === "list") {
       const snaps = await Snapshot.find({ guildId: message.guild.id }).sort({ createdAt: -1 });
       if (!snaps.length) return message.channel.send("📭 Yedek yok. `.snapshot al` ile oluşturun (otomatik bot da periyodik alır).");
       return message.channel.send("📸 **Yedekler:**\n" + snaps.map((s, i) =>

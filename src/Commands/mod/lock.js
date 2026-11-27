@@ -21,9 +21,9 @@ export const commandBase = {
       const saved = data.channelLocks.find((l) => l.channelId === channel.id);
       const overwrite = channel.permissionOverwrites.cache.get(message.guild.id);
       const current = overwrite?.deny.has(PermissionsBitField.Flags.SendMessages) ? false : overwrite?.allow.has(PermissionsBitField.Flags.SendMessages) ? true : null;
-      if (sub === "durum") return report(message, "Kanal kilidi", [["Kanal", channel.name], ["Mesaj izni", current === false ? "Engelli" : current === true ? "İzinli" : "Devralınıyor"], ["Kayıtlı kilit", saved ? "Var" : "Yok"]]);
+      if (["durum","status","info"].includes(sub)) return report(message, "Kanal kilidi", [["Kanal", channel.name], ["Mesaj izni", current === false ? "Engelli" : current === true ? "İzinli" : "Devralınıyor"], ["Kayıtlı kilit", saved ? "Var" : "Yok"]]);
       const reason = reasonText(args.slice(targetId ? 2 : 1));
-      if (sub === "kapat") {
+      if (["kapat","close","lock"].includes(sub)) {
         if (saved) return message.reply("ℹ️ Kanal zaten bot tarafından kilitlenmiş.");
         await Guild.updateOne({ guildId: message.guild.id }, { $push: { channelLocks: { channelId: channel.id, sendMessages: current } } }, { upsert: true });
         try { await channel.permissionOverwrites.edit(message.guild.id, { SendMessages: false }, { reason: auditReason(message, reason) }); }

@@ -6,11 +6,11 @@ export const commandBase = {
   name: "panik", aliases: ["panic", "beast"], description: "Süreli katılım engeli açar, kapatır ve kalan süreyi gösterir.", perms: PermissionsBitField.Flags.Administrator, cooldown: 5,
   async run(client, message, args) {
     const sub = args[0] ?? "durum";
-    if (sub === "durum") {
+    if (["durum","status","info"].includes(sub)) {
       const data = await settings(message.guild.id);
       return report(message, "Panik modu", [["Durum", data.raidUntil > new Date() ? "Aktif • <t:" + Math.floor(data.raidUntil.getTime() / 1000) + ":R> biter" : "Kapalı"]]);
     }
-    if (sub === "kapat") {
+    if (["kapat","close","disable","off"].includes(sub)) {
       await raidMode.off(message.guild.id);
       await recordCase(message, "panic-off", message.guild.id, "Manuel kapatma");
       return message.reply("🔓 Panik modu kapatıldı.");

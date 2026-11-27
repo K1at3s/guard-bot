@@ -24,9 +24,9 @@ export const commandBase = {
     const log = client.logger;
     try {
       const mode = args[0] ?? "kur";
-      if (!["kur", "onar", "kontrol"].includes(mode)) throw new UserInputError("Kullanım: setup kur|onar|kontrol");
+      if (!["kur","install","onar","repair","kontrol","check"].includes(mode)) throw new UserInputError("Kullanım: setup kur/install|onar/repair|kontrol/check");
       const data = await settings(guild.id);
-      if (mode === "kontrol") return report(message, "Kurulum kontrolü", [["Kategori", guild.channels.cache.has(data.logCategoryId) ? "Var" : "Eksik"], ["Log kanalları", LOGS.map(([, key]) => key + ": " + (guild.channels.cache.get(data.logs?.[key])?.isTextBased() ? "Var" : "Eksik")).join("\n")], ["Onarma", "setup onar — korumaların durumunu değiştirmeden logları onarır"]]);
+      if (mode === "kontrol" || mode === "check") return report(message, "Kurulum kontrolü", [["Kategori", guild.channels.cache.has(data.logCategoryId) ? "Var" : "Eksik"], ["Log kanalları", LOGS.map(([, key]) => key + ": " + (guild.channels.cache.get(data.logs?.[key])?.isTextBased() ? "Var" : "Eksik")).join("\n")], ["Onarma", "setup onar — korumaların durumunu değiştirmeden logları onarır"]]);
 
       const me = await guild.members.fetchMe();
       const botIds = [...new Set([me.id, ...activeGuardBotIds(data)])];
@@ -57,7 +57,7 @@ export const commandBase = {
         lines.push(`${ch} → ${key}`);
       }
       for (const key of ["ban", "kick", "bot", "channel", "role", "emoji", "sticker", "webhook", "server", "message", "raid", "timeout"]) {
-        if (mode === "kur") set[`guards.${key}.enabled`] = true;
+        if (mode === "kur" || mode === "install") set[`guards.${key}.enabled`] = true;
       }
       await Guild.updateOne({ guildId: guild.id }, { $set: set }, { upsert: true });
       log.info(`[Setup] ${guild.name}: kurulum tamamlandı (${message.author.tag}).`);

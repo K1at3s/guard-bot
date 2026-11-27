@@ -5,3 +5,4 @@ node_modules
 logs/
 test/
 docs/test-results.tap
+*.bat

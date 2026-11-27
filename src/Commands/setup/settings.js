@@ -8,6 +8,19 @@ import { snowflake, duration, recordCase, report } from "../../Utils/command.js"
 const dot = (v) => v ? "🟢" : "🔴";
 const ch = (id) => id ? `<#${id}>` : "`—`";
 const rl = (id) => id ? `<@&${id}>` : "`—`";
+const fmtMs = (ms) => {
+  const total = Math.max(0, Math.floor(Number(ms) / 1000));
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const parts = [];
+  if (d) parts.push(`${d}g`);
+  if (h) parts.push(`${h}sa`);
+  if (m) parts.push(`${m}dk`);
+  if (s || !parts.length) parts.push(`${s}sn`);
+  return parts.join(" ");
+};
 
 export const commandBase = {
   name: "settings",
@@ -26,22 +39,47 @@ export const commandBase = {
         if (!channel?.isTextBased() || channel.isThread?.()) throw new UserInputError("Geçerli log kanalı seçin.");
         if (channel.permissionsFor(message.guild.roles.everyone)?.has(PermissionsBitField.Flags.ViewChannel)) throw new UserInputError("Log kanalı herkese açık olamaz. Önce @everyone için Kanalı Görüntüle iznini kapatın.");
         set[`logs.${key}`] = channel.id;
-      } else if (sub === "mesaj" || sub === "raid") {
-        if (sub === "mesaj" && ["hariç-ekle", "hariç-kaldır"].includes(key)) {
+      } else if (sub === "mesaj" || sub === "message" || sub === "raid") {
+        if ((sub === "mesaj" || sub === "message") && ["hariç-ekle","haric-ekle","exclude-add","hariç-kaldır","haric-kaldir","exclude-remove"].includes(key)) {
           const id = snowflake(raw);
           if (!message.guild.channels.cache.get(id)?.isTextBased()) throw new UserInputError("Geçerli kanal seçin.");
-          await Guild.updateOne({ guildId: message.guild.id }, { [key === "hariç-ekle" ? "$addToSet" : "$pull"]: { "messagePolicy.ignoredChannels": id } }, { upsert: true });
+          await Guild.updateOne({ guildId: message.guild.id }, { [["hariç-ekle","haric-ekle","exclude-add"].includes(key) ? "$addToSet" : "$pull"]: { "messagePolicy.ignoredChannels": id } }, { upsert: true });
           return message.reply("✅ Mesaj korumasının kanal istisnası güncellendi. Token sızıntısı kontrolü devam eder.");
         }
-        set[`${sub === "mesaj" ? "messagePolicy" : "raidPolicy"}.${key}`] = policyValue(sub === "mesaj" ? MESSAGE_OPTIONS : RAID_OPTIONS, key, raw);
-      } else if (sub === "uyarı") {
+        set[`${(sub === "mesaj" || sub === "message") ? "messagePolicy" : "raidPolicy"}.${key}`] = policyValue((sub === "mesaj" || sub === "message") ? MESSAGE_OPTIONS : RAID_OPTIONS, key, raw);
+      } else if (sub === "uyarı" || sub === "uyari" || sub === "warning") {
         const threshold = Number(key), ms = duration(raw);
         if (!Number.isInteger(threshold) || threshold < 1 || threshold > 20 || !ms) throw new UserInputError("Kullanım: ayarlar uyarı <1..20> <1m|1h|1d>");
         set["warningPolicy.threshold"] = threshold;
         set["warningPolicy.timeoutMs"] = ms;
-      } else if (sub === "politikalar") {
-        return report(message, "Koruma politikaları", [["Mesaj", JSON.stringify(data.messagePolicy?.toObject?.() ?? data.messagePolicy)], ["Raid", JSON.stringify(data.raidPolicy?.toObject?.() ?? data.raidPolicy)], ["Uyarı", JSON.stringify(data.warningPolicy?.toObject?.() ?? data.warningPolicy)]]);
-      } else throw new UserInputError("Kullanım: ayarlar [log|mesaj|raid|uyarı|politikalar]. Ayrıntı: yardım settings");
+      } else if (sub === "politikalar" || sub === "policies") {
+        const m = data.messagePolicy?.toObject?.() ?? data.messagePolicy ?? {};
+        const r = data.raidPolicy?.toObject?.() ?? data.raidPolicy ?? {};
+        const w = data.warningPolicy?.toObject?.() ?? data.warningPolicy ?? {};
+        const ignored = (m.ignoredChannels ?? []).map((id) => `<#${id}>`).join(", ") || "`Yok`";
+        return report(message, "Koruma politikaları", [
+          ["Mesaj", [
+            `Davet linkleri: ${m.invites ? "🟢 Açık" : "🔴 Kapalı"}`,
+            `Scam linkleri: ${m.scam ? "🟢 Açık" : "🔴 Kapalı"}`,
+            `Mention limiti: \`${m.mentions ?? "—"}\``,
+            `Flood: \`${m.flood ?? "—"}\` mesaj / \`${fmtMs(m.floodWindowMs ?? 0)}\``,
+            `Tekrar: \`${m.duplicates ?? "—"}\``,
+            `Emoji limiti: \`${m.emojis ?? "—"}\``,
+            `Büyük harf: \`%${m.capsPercent ?? "—"}\` (min ${m.capsMinLength ?? "—"} karakter)`,
+            `Mesaj timeout: \`${fmtMs(m.timeoutMs ?? 0)}\``,
+            `İstisna kanallar: ${ignored}`,
+          ].join("\n")],
+          ["Raid", [
+            `Katılım penceresi: \`${fmtMs(r.windowMs ?? 0)}\``,
+            `Raid süresi: \`${fmtMs(r.durationMs ?? 0)}\``,
+            `Min. hesap yaşı: \`${r.minAccountAgeHours ?? 0}\` saat${(r.minAccountAgeHours ?? 0) === 0 ? " (Kapalı)" : ""}`,
+          ].join("\n")],
+          ["Uyarı", [
+            `Eşik: \`${w.threshold ?? "—"}\` uyarı`,
+            `Timeout süresi: \`${fmtMs(w.timeoutMs ?? 0)}\``,
+          ].join("\n")],
+        ]);
+      } else throw new UserInputError("Kullanım: ayarlar [log|mesaj/message|raid|uyarı/warning|politikalar/policies]. Ayrıntı: yardım settings");
       await Guild.updateOne({ guildId: message.guild.id }, { $set: set }, { upsert: true, runValidators: true });
       await recordCase(message, "settings", message.guild.id, args.join(" "));
       return message.reply("✅ Ayarlar güncellendi: " + Object.entries(set).map(([k, v]) => `${k} = ${v}`).join(", "));

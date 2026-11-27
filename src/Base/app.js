@@ -18,8 +18,8 @@ const client = new Client({
   ],
   partials: [Partials.GuildMember, Partials.User, Partials.Channel, Partials.Message],
   presence: {
-    activities: [{ name: `${config.prefix}yardım • ${config.role}`, type: ActivityType.Watching }],
-    status: "online",
+    activities: [{ name: "GIF STORY ❤️", type: ActivityType.Playing }],
+    status: "idle",
   },
 });
 client.role = config.role;

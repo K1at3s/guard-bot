@@ -1,6 +1,7 @@
 import { Events } from "discord.js";
 import config from "../Base/config.js";
 import Guild from "../Database/schemas/Guild.js";
+import { registerSlashCommands } from "../Utils/slash.js";
 
 export default {
   name: Events.ClientReady,
@@ -19,5 +20,6 @@ export default {
     await heartbeat();
     const timer = setInterval(() => heartbeat().catch((err) => client.logger.error(`[Durum sinyali] ${err.message}`)), 60000);
     timer.unref();
+    registerSlashCommands(client).catch((err) => client.logger.error(`[Slash] kayıt başarısız: ${err.message}`));
   },
 };

@@ -8,7 +8,7 @@ export const commandCatalog = {
   panik: { usage: "<aç [1m..1h]|kapat|durum>", trustedOnly: true },
   kurtar: { usage: "<liste [sayfa]|uygula ONAY [en-fazla-100]>", botPerms: ["BanMembers"] },
   snapshot: { usage: "<al|liste|incele <sıra>|yükle <sıra> ONAY>", botPerms: ["ManageRoles", "ManageChannels"], trustedOnly: true },
-  guard: { usage: "<liste|bilgi <sistem>|aç <sistem|tümü>|kapat <sistem|tümü>|ceza <sistem> <karantina|kick|ban>|limit <tür> <1..100>|profil <dengeli|sıkı>>", trustedOnly: true },
+  guard: { usage: "<durum|bilgi <sistem>|aç <sistem|tümü>|kapat <sistem|tümü>|ceza <sistem> <karantina|kick|ban>|limit <ban|kick|katılım|susturma> <1..100>|profil <dengeli|sıkı>>", trustedOnly: true },
   settings: { usage: "[log <sistem> <#kanal>|mesaj <ayar> <değer>|raid <ayar> <değer>|uyarı <eşik> <süre>|politikalar]", trustedOnly: true },
   setup: { usage: "[kontrol|onar|kur]", botPerms: ["ManageChannels"], trustedOnly: true },
   "komut-kanal": { usage: "<liste [sayfa]|sadece|aç|kapat|çıkar|her-yer> [#kanal]", trustedOnly: true },

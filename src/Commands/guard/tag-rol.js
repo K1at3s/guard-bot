@@ -7,12 +7,12 @@ import { snowflake, report, recordCase } from "../../Utils/command.js";
 import Quarantine from "../../Database/schemas/Quarantine.js";
 const running = new Set();
 export const commandBase = {
-  name: "tag-rol", aliases: ["tagrol"], description: "Güvenli tag rolü ayarlar ve mevcut üyelerin rollerini eşitler.", perms: PermissionsBitField.Flags.ManageGuild, cooldown: 5,
+  name: "tag-rol", aliases: ["tagrol","tag-role","tagrole"], description: "Güvenli tag rolü ayarlar ve mevcut üyelerin rollerini eşitler.", perms: PermissionsBitField.Flags.ManageGuild, cooldown: 5,
   async run(client, message, args) {
     const data = await settings(message.guild.id);
     const sub = args[0] ?? "durum";
-    if (sub === "durum") return report(message, "Tag rolü", [["Durum", data.guards.tag.enabled ? "Açık" : "Kapalı"], ["Rol", data.tagRole || "Ayarlanmamış"]]);
-    if (sub === "kapat") {
+    if (["durum","status","info"].includes(sub)) return report(message, "Tag rolü", [["Durum", data.guards.tag.enabled ? "Açık" : "Kapalı"], ["Rol", data.tagRole || "Ayarlanmamış"]]);
+    if (["kapat","close","disable","off"].includes(sub)) {
       await Guild.updateOne({ guildId: message.guild.id }, { $set: { "guards.tag.enabled": false } });
       return message.reply("⏹️ Tag rol otomasyonu kapatıldı; mevcut roller korundu.");
     }

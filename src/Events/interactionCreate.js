@@ -1,12 +1,22 @@
 import { Events, UserSelectMenuBuilder, ActionRowBuilder, MessageFlags, ContainerBuilder, TextDisplayBuilder, PermissionsBitField } from "discord.js";
 import config from "../Base/config.js";
+import Guild from "../Database/schemas/Guild.js";
 import { settings } from "../Utils/guard.js";
 import { updateSafelist } from "../Utils/safelist.js";
+import { canRunCommand } from "../Utils/authorization.js";
+import { UserInputError } from "../Utils/errors.js";
+import { WindowCounter } from "../Utils/rateLimit.js";
+import { resolveSlashDef, slashToArgs, wrapInteraction } from "../Utils/slash.js";
+
 const IDS = new Set(["kullanici_ekle", "kullanici_kaldir", "listele", "userSelect", "userRemoveFromSafeList"]);
+const cooldown = new Map();
+const ingress = new WindowCounter();
 const textPanel = (text) => new ContainerBuilder().setAccentColor(0x0099ff).addTextDisplayComponents(new TextDisplayBuilder().setContent(text));
+
 export default {
   name: Events.InteractionCreate, roles: ["guard3"],
   async execute(interaction) {
+    if (interaction.isChatInputCommand()) return handleSlash(interaction);
     if (!interaction.guildId || !IDS.has(interaction.customId)) return;
     if (!config.owners.includes(interaction.user.id) || !interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
       return interaction.reply({ content: "❌ Panel bot sahibi ve sunucu yöneticisi yetkisi gerektirir.", flags: MessageFlags.Ephemeral });
@@ -31,7 +41,8 @@ export default {
         return interaction.editReply({ components: [textPanel("✅ " + interaction.values.length + " kullanıcı için " + (add ? "ekleme" : "kaldırma") + " tamamlandı.")], flags: MessageFlags.IsComponentsV2 });
       }
       if (id === "listele") {
-        const text = "Güvenli liste • " + data.safelist.length + " kullanıcı\n" + (data.safelist.slice(0, 100).join("\n") || "Liste boş") + (data.safelist.length > 100 ? "\nDevamı: safelist liste 8" : "");
+        const items = data.safelist.slice(0, 100).map((uid) => `<@${uid}> (\`${uid}\`)`);
+        const text = "Güvenli liste • " + data.safelist.length + " kullanıcı\n" + (items.join("\n") || "Liste boş") + (data.safelist.length > 100 ? "\nDevamı: safelist liste 8" : "");
         return interaction.editReply({ components: [textPanel(text)], flags: MessageFlags.IsComponentsV2 });
       }
     } catch (err) {
@@ -42,3 +53,55 @@ export default {
     }
   },
 };
+
+async function handleSlash(interaction) {
+  const { client } = interaction;
+  const log = client.logger;
+  if (!interaction.guild) return interaction.reply({ content: "❌ Bu komut sadece sunucuda kullanılabilir.", flags: MessageFlags.Ephemeral }).catch(() => {});
+  const def = resolveSlashDef(interaction);
+  const command = def ? (client.commands.get(def.name) ?? client.commands.get(client.commandAliases.get(def.name))) : null;
+  if (!command) return interaction.reply({ content: "❌ Komut bulunamadı.", flags: MessageFlags.Ephemeral }).catch(() => {});
+  const args = slashToArgs(interaction, def);
+  const priority = interaction.user.id === interaction.guild.ownerId || config.owners.includes(interaction.user.id);
+  if (!priority && (ingress.hit(`user:${interaction.guild.id}:${interaction.user.id}`, 10000) > 10
+    || ingress.hit(`guild:${interaction.guild.id}`, 10000) > 200)) {
+    return interaction.reply({ content: "❌ Çok fazla istek. Lütfen bekleyin.", flags: MessageFlags.Ephemeral }).catch(() => {});
+  }
+  try {
+    await interaction.deferReply();
+    const actor = interaction.member ?? await interaction.guild.members.fetch({ user: interaction.user.id, force: true }).catch(() => null);
+    if (!actor) return interaction.editReply({ content: "❌ Üye bilgisi alınamadı." }).catch(() => {});
+    const data = await Guild.findOne({ guildId: interaction.guild.id }, { warns: 0 });
+    if (!canRunCommand(command, actor, interaction.guild, data, args)) {
+      return interaction.editReply({ content: "❌ Bu komut için yetkiniz yok. Koruma ayarları sahip veya güvenli listedeki yetkililere açıktır." }).catch(() => {});
+    }
+    if (command.name !== "komut-kanal") {
+      const allowed = data?.commandChannels ?? [];
+      if ((allowed.length && !allowed.includes(interaction.channel.id)) || data?.disabledChannels?.includes(interaction.channel.id)) {
+        return interaction.editReply({ content: "❌ Bu kanalda komut kullanılamaz." }).catch(() => {});
+      }
+    }
+    const cd = (command.cooldown ?? 3) * 1000;
+    const key = `${interaction.guild.id}:${command.name}:${interaction.user.id}`;
+    if ((cooldown.get(key) ?? 0) > Date.now()) return interaction.editReply({ content: "⏳ Komut bekleme süresinde." }).catch(() => {});
+    cooldown.set(key, Date.now() + cd);
+    const timer = setTimeout(() => cooldown.delete(key), cd);
+    timer.unref();
+    const me = await interaction.guild.members.fetchMe();
+    const missing = (command.botPerms ?? []).filter((name) => !me.permissions.has(PermissionsBitField.Flags[name]));
+    if (missing.length) return interaction.editReply({ content: `❌ Botun eksik yetkileri: ${missing.join(", ")}` }).catch(() => {});
+
+    log.info(`[Slash] ${interaction.user.tag} (${interaction.user.id}) #${interaction.channel?.name}: ${command.name} ${args.join(" ")}`.slice(0, 300));
+    const wrapped = wrapInteraction(interaction);
+    await command.run(client, wrapped, args);
+  } catch (err) {
+    log.error(`[Slash] ${command?.name} hatası: ${err.message}`);
+    const safeErrors = [10007, 10013, 10026, 50001, 50013];
+    const errorText = safeErrors.includes(err.code) ? "Discord erişimi reddetti veya hedef bulunamadı. Botun yetkilerini ve rol sırasını kontrol edin."
+      : err.name === "ValidationError" || err.name === "MongoServerError" ? "Veritabanına işlem kaydedilemedi."
+      : err instanceof UserInputError ? err.message : "İşlem tamamlanamadı; hata kaydını kontrol edin.";
+    const payload = { content: `❌ ${errorText}`.slice(0, 1800) };
+    if (interaction.deferred || interaction.replied) await interaction.editReply(payload).catch(() => {});
+    else await interaction.reply({ ...payload, flags: MessageFlags.Ephemeral }).catch(() => {});
+  }
+}

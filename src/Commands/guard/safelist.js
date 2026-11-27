@@ -48,17 +48,18 @@ export const commandBase = {
     if (args.length) {
       const [sub, raw] = args;
       const data = await settings(message.guild.id);
-      if (sub === "liste") {
+      if (sub === "liste" || sub === "list") {
         const page = paginate(data.safelist, raw, 15);
-        return report(message, `Güvenli liste • ${page.page}/${page.pages}`, [["Toplam", page.total], ["Üyeler", page.items.join("\n") || "Liste boş"]]);
+        const items = page.items.map((uid) => `<@${uid}> (\`${uid}\`)`);
+        return report(message, `Güvenli liste • ${page.page}/${page.pages}`, [["Toplam", page.total], ["Üyeler", items.join("\n") || "Liste boş"]]);
       }
       const id = snowflake(raw);
       if (!id) throw new UserInputError("Geçerli kullanıcı etiketi veya ID girin.");
-      if (sub === "kontrol") return report(message, "Muafiyet kontrolü", [["Kullanıcı", id], ["Guard muafiyeti", isExempt(message.guild, id, data) ? "Var" : "Yok"], ["Safelist kaydı", data.safelist.includes(id) ? "Var" : "Yok"]]);
-      if (!["ekle", "kaldır"].includes(sub)) throw new UserInputError("Kullanım: safelist ekle|kaldır|kontrol <ID> veya safelist liste [sayfa]");
-      if (sub === "ekle" && data.safelist.length >= 200 && !data.safelist.includes(id)) throw new UserInputError("Güvenli liste en fazla 200 kullanıcı içerebilir.");
-      await updateSafelist(message.guild.id, [id], sub === "ekle");
-      await recordCase(message, "safelist", id, sub);
+      if (sub === "kontrol" || sub === "check") return report(message, "Muafiyet kontrolü", [["Kullanıcı", id], ["Guard muafiyeti", isExempt(message.guild, id, data) ? "Var" : "Yok"], ["Safelist kaydı", data.safelist.includes(id) ? "Var" : "Yok"]]);
+      if (!["ekle","add","kaldır","kaldir","remove"].includes(sub)) throw new UserInputError("Kullanım: safelist ekle|kaldır|kontrol <ID> veya safelist liste [sayfa]");
+      if ((sub === "ekle" || sub === "add") && data.safelist.length >= 200 && !data.safelist.includes(id)) throw new UserInputError("Güvenli liste en fazla 200 kullanıcı içerebilir.");
+      await updateSafelist(message.guild.id, [id], ["ekle","add"].includes(sub));
+      await recordCase(message, "safelist", id, ["ekle","add"].includes(sub) ? "ekle" : "kaldır");
       return message.reply(`✅ ${id}: güvenli liste ${sub} işlemi tamamlandı.`);
     }
     const isTurkish = message.guild.preferredLocale?.startsWith("tr");

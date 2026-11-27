@@ -6,8 +6,8 @@ export const commandBase = {
   async run(client, message, args) {
     if (running.has(message.guild.id)) throw new UserInputError("Bu sunucuda kurtarma zaten çalışıyor.");
     const bans = await message.guild.bans.fetch();
-    if (args[0] !== "uygula") {
-      const page = paginate([...bans.values()], args[0] === "liste" ? args[1] : "1", 8);
+    if (!["uygula","apply"].includes(args[0])) {
+      const page = paginate([...bans.values()], ["liste","list"].includes(args[0]) ? args[1] : "1", 8);
       return report(message, "Ban kurtarma önizlemesi • " + page.page + "/" + page.pages, [["Toplam ban", bans.size], ["Liste", page.items.map((b) => b.user.id + " • " + b.user.tag + " • " + (b.reason || "Sebep yok").slice(0, 60)).join("\n") || "Ban yok"], ["Uygulama", "kurtar uygula ONAY [1..100] — en eski Discord liste sırasındaki ilk kayıtlar kaldırılır"]]);
     }
     const limit = Number(args[2] ?? 25);

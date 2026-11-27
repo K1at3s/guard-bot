@@ -6,7 +6,13 @@ import { PROFILES } from "../../Utils/policy.js";
 import { report, recordCase } from "../../Utils/command.js";
 
 const PUNISH_TR = { quarantine: "karantina", kick: "kick", ban: "ban" };
-const PUNISH_EN = { karantina: "quarantine", kick: "kick", ban: "ban" };
+const PUNISH_EN = { karantina: "quarantine", quarantine: "quarantine", kick: "kick", ban: "ban" };
+const SYSTEM_ALIASES = {
+  ban:"ban", yasak:"ban", kick:"kick", atma:"kick", bot:"bot", raid:"raid", baskin:"raid",
+  channel:"channel", kanal:"channel", role:"role", rol:"role", emoji:"emoji", sticker:"sticker", cikartma:"sticker",
+  webhook:"webhook", server:"server", sunucu:"server", message:"message", mesaj:"message", tag:"tag", etiket:"tag", timeout:"timeout", susturma:"timeout"
+};
+const sysKey = (v) => SYSTEM_ALIASES[String(v ?? "").toLowerCase()] ?? (Object.hasOwn(GUARDS, v) ? v : null);
 
 async function statusEmbed(guildId) {
   const data = await settings(guildId);
@@ -27,11 +33,12 @@ export const commandBase = {
   async run(client, message, args) {
     const [sub, a, b] = args;
     const data = await settings(message.guild.id);
-    if (sub === "bilgi") {
-      if (!Object.hasOwn(GUARDS, a)) throw new UserInputError("Geçerli bir sistem adı girin; guard liste ile görebilirsiniz.");
-      return report(message, GUARDS[a].name, [["Görevli", GUARDS[a].roles.join(", ")], ["Durum", data.guards[a].enabled ? "Açık" : "Kapalı"], ["Ceza", data.guards[a].punish], ["Eşik", GUARDS[a].limit ? data.limits[GUARDS[a].limit] : "Anında / sistem politikası"], ["Log kanalı", data.logs?.[a] || "Ayarlanmamış"]]);
+    if (sub === "bilgi" || sub === "info") {
+      const key = sysKey(a);
+      if (!key) throw new UserInputError("Geçerli bir sistem adı girin; `.guard durum` ile görebilirsiniz.");
+      return report(message, GUARDS[key].name, [["Görevli", GUARDS[key].roles.join(", ")], ["Durum", data.guards[key].enabled ? "Açık" : "Kapalı"], ["Ceza", data.guards[key].punish], ["Eşik", GUARDS[key].limit ? data.limits[GUARDS[key].limit] : "Anında / sistem politikası"], ["Log kanalı", data.logs?.[key] || "Ayarlanmamış"]]);
     }
-    if (sub === "profil") {
+    if (sub === "profil" || sub === "profile") {
       const profile = Object.hasOwn(PROFILES, a) ? PROFILES[a] : null;
       if (!profile) throw new UserInputError("Profiller: dengeli, sıkı");
       const set = {};
@@ -40,29 +47,30 @@ export const commandBase = {
       await recordCase(message, "guard-profile", message.guild.id, a);
       return message.reply(`✅ ${a} profili uygulandı. Korumaların açık/kapalı durumu korunur.`);
     }
-    if (["aç", "kapat"].includes(sub) && ["tümü", "hepsi"].includes(a)) {
-      const set = Object.fromEntries(Object.keys(GUARDS).filter((key) => key !== "tag").map((key) => [`guards.${key}.enabled`, sub === "aç"]));
+    if (["aç","ac","open","enable","kapat","close","disable"].includes(sub) && ["tümü","hepsi","all"].includes(a)) {
+      const set = Object.fromEntries(Object.keys(GUARDS).filter((key) => key !== "tag").map((key) => [`guards.${key}.enabled`, ["aç","ac","open","enable"].includes(sub)]));
       await Guild.updateOne({ guildId: message.guild.id }, { $set: set }, { upsert: true });
-      await recordCase(message, "guard-all", message.guild.id, sub);
-      return message.reply(`✅ Tüm güvenlik korumaları ${sub === "aç" ? "açıldı" : "kapatıldı"}. Tag rolü ayrı yönetilir.`);
+      await recordCase(message, "guard-all", message.guild.id, ["aç","ac","open","enable"].includes(sub)?"aç":"kapat");
+      return message.reply(`✅ Tüm güvenlik korumaları ${["aç","ac","open","enable"].includes(sub) ? "açıldı / enabled" : "kapatıldı / disabled"}. Tag rolü ayrı yönetilir.`);
     }
 
-    if (!sub || sub === "liste") {
+    if (!sub || ["liste","list","durum","status"].includes(sub)) {
       return message.channel.send({ embeds: [await statusEmbed(message.guild.id)] });
     }
-    if (!Object.hasOwn(GUARDS, a) && sub !== "limit") {
-      return message.channel.send(`❌ Sistem bulunamadı. Kullanım: \`.guard liste | aç <sistem> | kapat <sistem> | ceza <sistem> <karantina|kick|ban> | limit <ban|kick|katılım|susturma> <sayı>\``);
+    const key = sysKey(a);
+    if (!key && sub !== "limit") {
+      return message.channel.send("❌ Sistem bulunamadı. Kullanım: `.guard durum` | `.guard aç/kapat <sistem|tümü>` | `.guard ceza <sistem> <karantina|kick|ban>` | `.guard limit <ban|kick|katılım|susturma> <1-100>` | `.guard profil <dengeli|sıkı>`");
     }
 
-    if (sub === "aç" || sub === "kapat") {
-      await Guild.updateOne({ guildId: message.guild.id }, { $set: { [`guards.${a}.enabled`]: sub === "aç" } }, { upsert: true });
-      return message.channel.send(`${sub === "aç" ? "🟢" : "🔴"} **${GUARDS[a].name}** ${sub === "aç" ? "açıldı" : "kapatıldı"}.`);
+    if (["aç","ac","open","enable","kapat","close","disable"].includes(sub)) {
+      await Guild.updateOne({ guildId: message.guild.id }, { $set: { [`guards.${key}.enabled`]: ["aç","ac","open","enable"].includes(sub) } }, { upsert: true });
+      return message.channel.send(`${["aç","ac","open","enable"].includes(sub) ? "🟢" : "🔴"} **${GUARDS[key].name}** ${["aç","ac","open","enable"].includes(sub) ? "açıldı / enabled" : "kapatıldı / disabled"}.`);
     }
-    if (sub === "ceza") {
+    if (sub === "ceza" || sub === "punish") {
       const mode = Object.hasOwn(PUNISH_EN, b) ? PUNISH_EN[b] : null;
       if (!mode) return message.channel.send("❌ Kullanım: `.guard ceza <sistem> <karantina|kick|ban>`");
-      await Guild.updateOne({ guildId: message.guild.id }, { $set: { [`guards.${a}.punish`]: mode } }, { upsert: true });
-      return message.channel.send(`✅ **${GUARDS[a].name}** ceza modu: **${b}**.`);
+      await Guild.updateOne({ guildId: message.guild.id }, { $set: { [`guards.${key}.punish`]: mode } }, { upsert: true });
+      return message.channel.send(`✅ **${GUARDS[key].name}** ceza modu: **${b}**.`);
     }
     if (sub === "limit") {
       const field = a === "katılım" ? "joins" : a === "susturma" ? "timeout" : a;
